@@ -29,7 +29,10 @@ with DAG(
     extract_task = PythonOperator(
         task_id='extract',
         python_callable=extract_and_load_to_minio,
-        op_kwargs={'export_date': datetime.date(2025, 9, 6), 'extract_column': 'update_dt', 'data_type': 'updatings'}
+        op_kwargs={'export_date': datetime.date(2025, 9, 6),
+                   'query': "SELECT * FROM public.orders WHERE date_trunc('day', update_dt) = '2025-09-06' AND order_dt < '2025-09-06'",
+                    'data_type': 'updatings'
+                }
     ),
     transform_and_load_task = PythonOperator(
         task_id='transform_and_load_task',

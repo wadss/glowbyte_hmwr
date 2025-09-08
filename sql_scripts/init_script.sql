@@ -48,23 +48,14 @@ CREATE TABLE IF NOT EXISTS default.orders_mart
     `update_dt` Nullable(DateTime),
     `version` UInt64
 )
-ENGINE = MergeTree
+ENGINE = ReplacingMergeTree(version)
 ORDER BY order_id
 TTL order_dt + INTERVAL 1 YEAR DELETE;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS default.orders_mart_rmv
 TO default.orders_mart
 AS
-SELECT o.*
-FROM default.orders_story o
-INNER JOIN (
-    SELECT
-        order_id,
-        max(version) AS max_version
-    FROM default.orders_story
-    GROUP BY order_id
-) t
-ON o.order_id = t.order_id
-AND o.version = t.max_version;
+SELECT *
+FROM default.orders_story;
 
 

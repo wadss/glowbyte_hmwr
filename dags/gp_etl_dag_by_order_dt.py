@@ -15,6 +15,7 @@ default_args = {
     'retries': 0,
     'retry_delay': datetime.timedelta(minutes=1),
 }
+UPLOAD_DATE = datetime.date(2025, 9, 6)
 
 
 with DAG(
@@ -30,13 +31,16 @@ with DAG(
     extract_task = PythonOperator(
         task_id='extract',
         python_callable=extract_and_load_to_minio,
-        op_kwargs={'export_date': datetime.date(2025, 9, 6), 'extract_column': 'order_dt', 'data_type': 'raw'}
+        op_kwargs={'export_date': UPLOAD_DATE,
+                   'query': "SELECT * FROM public.orders WHERE date_trunc('day', order_dt) = '2025-09-06'",
+                   'data_type': 'raw'
+                }
     )
 
     transform_and_load_task = PythonOperator(
         task_id='transform_and_load_task',
         python_callable=trsnfrm_ld_to_ck_order_dt,
-        op_kwargs={'export_date': datetime.date(2025, 9, 6), 'data_type': 'raw'}
+        op_kwargs={'export_date': UPLOAD_DATE, 'data_type': 'raw'}
     )
 
     trigger_next = TriggerDagRunOperator(

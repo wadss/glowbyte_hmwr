@@ -9,9 +9,8 @@ CONN_MINIO = BaseHook.get_connection('minio')
 PATH = FSHook(fs_conn_id='gp_path')
 
 
-def extract_and_load_to_minio(data_type, extract_column, export_date, **kwargs):
+def extract_and_load_to_minio(query, data_type, export_date, **kwargs):
     buffer = io.BytesIO()
-    query = f"SELECT * FROM public.orders WHERE date_trunc('day', {extract_column}) = '{export_date}'::date"
     client = Minio(f'{CONN_MINIO.host}:{CONN_MINIO.port}', access_key=CONN_MINIO.login, secret_key=CONN_MINIO.password, secure=False)
     bucket = PATH.get_path()
     if not client.bucket_exists(bucket):
